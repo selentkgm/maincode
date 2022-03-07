@@ -133,7 +133,7 @@ void loop()
   delay(1500); //görev yükünün ayrılması için beklenir
 
   //guided modu 
-  kalkısModu(); //takeoff
+  kalkisModu(); //takeoff
   //hız değişkenleri yapılacak
   
   else if(yukseklik==240){
