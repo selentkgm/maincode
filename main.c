@@ -6,20 +6,20 @@
 #include <mavlink_types.h>
 #include <protocol.h>
 #include <SoftwareSerial.h>
-#include<Servo.h>
-#include<ezButton.h>
+#include <Servo.h>
+#include <ezButton.h>
 #include <ezBuzzer.h>
 #define servoPin 9 //pin
 
 ezButton limitSwitch //pin
-int buzzer_pin= //pin
+int buzzer_pin = //pin
 Servo servo;
 
 ezBuzzer sesliIkaz(buzzer_pin);
 
-unit8_t sistemTuru = MAV_TYPE_HEXAROTOR;
+unit8_t sistemTuru   = MAV_TYPE_HEXAROTOR;
 unit8_t otopilotTuru =  MAV_AUTOPILOT_PIXHAWK;
-unit8_t sistemModu = MAV_MODE_AUTO_ARMED;
+unit8_t sistemModu   = MAV_MODE_AUTO_ARMED;
 unit8_t sistemDurumu = MAV_STATE_STANDBY; 
 
 uint8_t mav1[MAVLINK_MAX_PACKET_LEN];
@@ -27,92 +27,108 @@ uint8_t mav2[MAVLINK_MAX_PACKET_LEN];
 
 int yukseklik;
 int buton = ?;               
-int butondurum = 0; 
-int sistemID    =1;
+int butondurum  = 0; 
+int sistemID    = 1;
 int companionID = 1;
-int otopilotID  =1;
+int otopilotID  = 1;
 int bayrak;
 
 void setup(){
   Serial.begin(9600);
   pinMode(buton,INPUT);
 
-  heartbeat.sistemModu =  MAV_MODE_AUTO_ARMED; 
-  heartbeat.custom_mode = --;// ' mod yaz'
-  heartbeat.sistemDurumu = MAV_STATE_STANDBY;
-  limitSwitch.setDebounceTime(50); //50 ms ile kontrol ediliyor
+  heartbeat.sistemModu   =  MAV_MODE_AUTO_ARMED; 
+  heartbeat.custom_mode  = --;// ' mod yaz'
+  heartbeat.sistemDurumu = MAV_S TATE_STANDBY;
+  limitSwitch.setDebounceTime(50); 50 ms ile kontrol ediliyor
   servo.attach(servoPin);
 }
-int sistemHazir(){
+int guidedModu(){//guided
      
-    mavlink_command_long_t komut;
-    komut.target_system = 1;
-    komut.target_component = 1;
-    komut.command = ;
-    komut.confirmation =true;
+    mavlink_command_long_t guided;
+    guided.target_system    = 1;
+    guided.target_component = 1;
+    guided.command          = MAV_CMD_DO_SET_MODE;
+    guided.confirmation     =true;
+    guided.param1           =1;
+    guided.param2           =GUIDED; //4
  
-   mavlink_message_t mesaj1;
-   mavlink_msg_command_long_encode(sistemID, companionID, &mesaj1, &komut);
+   mavlink_message_t mesaj;
+   mavlink_msg_command_long_encode(sistemID, companionID, &mesaj, &guided);
 
   
-   int gonder3= write_message(mesaj1);
+   int gonder= write_message(mesaj);
 
-     return gonder1;
+    return gonder;
 }
-
-int kalkisModu(){//takeoff
+int armModu(){//arm
      
-    mavlink_command_long_t komut;
-    komut.target_system = 1;
-    komut.target_component = 1;
-    komut.command = MAV_CMD_NAV_TAKEOFF;
-    komut.confirmation =true;
- 
-   mavlink_message_t mesaj2;
-   mavlink_msg_command_long_encode(sistemID, companionID, &mesaj2, &komut);
+    mavlink_command_long_t armEtme;     armEtme.target_system = 1;
+    armEtme.target_component = 1;
+    armEtme.command          = MAV_CMD_COMPONENT_ARM_DISARM;
+    armEtme.confirmation     =true;
+   
+   mavlink_message_t mesaj1;
+   mavlink_msg_command_long_encode(sistemID, companionID, &mesaj1, &armEtme);
 
   
-   int gonder3= write_message(mesaj2);
+   int gonder1= write_message(mesaj1);
 
-     return gonder2;
+    return gonder1;
+}
+int kalkisModu(){
+     
+    mavlink_command_long_t kalkis;
+    kalkis.target_system    = 1;
+    kalkis.target_component = 1;
+    kalkis.command          = MAV_CMD_NAV_TAKEOFF;
+    kalkis.confirmation     =true;
+ 
+   mavlink_message_t mesaj3;
+   mavlink_msg_command_long_encode(sistemID, companionID, &mesaj3, &kalkis);
+
+  
+   int gonder3= write_message(mesaj3);
+
+     return gonder3;
 }
 
 int irtifaSabitle(){
    if(bayrak==1)
      continue;
      
-    mavlink_command_long_t komut;
-    komut.target_system = 1;
-    komut.target_component = 1;
-    komut.command =  MAV_CMD_NAV_LOITER_TIME;
-    komut.confirmation =true;
+    mavlink_command_long_t irtifa;
+    irtifa.target_system    = 1;
+    irtifa.target_component = 1;
+    irtifa.command          =  MAV_CMD_NAV_LOITER_TIME;
+    irtifa.confirmation     =true;
  
-   mavlink_message_t mesaj3;
-   mavlink_msg_command_long_encode(sistemID, companionID, &mesaj3, &komut);
+   mavlink_message_t mesaj4;
+   mavlink_msg_command_long_encode(sistemID, companionID, &mesaj4, &irtifa);
 
   
-   int gonder= write_message(mesaj3);
+   int gonder4= write_message(mesaj4);
    bayrak=2;
      
    else
      bayrak=1;
    
-     return gonder3;
+     return gonder4;
 }
 int landKomutu(){
  
-    mavlink_command_long_t komut;
-    komut.target_system    = 1;
-    komut.target_component = 1;
-    komut.command          = MAV_CMD_NAV_LAND ;
-    komut.confirmation     =true;
+    mavlink_command_long_t inis;
+    inis.target_system    = 1;
+    inis.target_component = 1;
+    inis.command          = MAV_CMD_NAV_LAND ;
+    inis.confirmation     = true;
  
-   mavlink_message_t mesaj4;
-   mavlink_msg_command_long_encode(sistemID, companionID, &mesaj4, &komut);
+   mavlink_message_t mesaj5;
+   mavlink_msg_command_long_encode(sistemID, companionID, &mesaj5, &inis); //1,255,
      
-     int gonder2= write_message(mesaj4)
+     int gonder5= write_message(mesaj5)
      
-     return gonder4;
+     return gonder5;
 }
 
 void loop()
@@ -132,8 +148,9 @@ void loop()
    }
   delay(1500); //görev yükünün ayrılması için beklenir
 
-  //guided modu 
-  kalkisModu(); //takeoff
+  guidedModu();
+  armModu();
+  kalkısModu(); 
   //hız değişkenleri yapılacak
   
   else if(yukseklik==240){
