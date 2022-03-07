@@ -60,7 +60,7 @@ int sistemHazir(){
      return gonder1;
 }
 
-int kalkısModu(){//takeoff
+int kalkisModu(){//takeoff
      
     mavlink_command_long_t komut;
     komut.target_system = 1;
