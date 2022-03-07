@@ -39,25 +39,25 @@ void setup(){
 
   heartbeat.sistemModu =  MAV_MODE_AUTO_ARMED; 
   heartbeat.custom_mode = --;// ' mod yaz'
-  heartbeat.sistemDurumu = MAV_S TATE_STANDBY;
-  limitSwitch.setDebounceTime(50); 50 ms ile kontrol ediliyor
+  heartbeat.sistemDurumu = MAV_STATE_STANDBY;
+  limitSwitch.setDebounceTime(50); //50 ms ile kontrol ediliyor
   servo.attach(servoPin);
 }
-int sistemHazir(){//takeoff
+int sistemHazir(){
      
     mavlink_command_long_t komut;
     komut.target_system = 1;
     komut.target_component = 1;
-    komut.command = MAV_CMD_NAV_TAKEOFF;
+    komut.command = ;
     komut.confirmation =true;
  
-   mavlink_message_t mesaj3;
-   mavlink_msg_command_long_encode(sistemID, companionID, &mesaj3, &komut);
+   mavlink_message_t mesaj1;
+   mavlink_msg_command_long_encode(sistemID, companionID, &mesaj1, &komut);
 
   
-   int gonder3= write_message(mesaj3);
+   int gonder3= write_message(mesaj1);
 
-     return gonder3;
+     return gonder1;
 }
 
 int kalkısModu(){//takeoff
@@ -68,13 +68,13 @@ int kalkısModu(){//takeoff
     komut.command = MAV_CMD_NAV_TAKEOFF;
     komut.confirmation =true;
  
-   mavlink_message_t mesaj3;
-   mavlink_msg_command_long_encode(sistemID, companionID, &mesaj3, &komut);
+   mavlink_message_t mesaj2;
+   mavlink_msg_command_long_encode(sistemID, companionID, &mesaj2, &komut);
 
   
-   int gonder3= write_message(mesaj3);
+   int gonder3= write_message(mesaj2);
 
-     return gonder3;
+     return gonder2;
 }
 
 int irtifaSabitle(){
@@ -87,17 +87,17 @@ int irtifaSabitle(){
     komut.command =  MAV_CMD_NAV_LOITER_TIME;
     komut.confirmation =true;
  
-   mavlink_message_t mesaj;
-   mavlink_msg_command_long_encode(sistemID, companionID, &mesaj, &komut);
+   mavlink_message_t mesaj3;
+   mavlink_msg_command_long_encode(sistemID, companionID, &mesaj3, &komut);
 
   
-   int gonder= write_message(mesaj);
+   int gonder= write_message(mesaj3);
    bayrak=2;
      
    else
      bayrak=1;
    
-     return gonder;
+     return gonder3;
 }
 int landKomutu(){
  
@@ -107,12 +107,12 @@ int landKomutu(){
     komut.command          = MAV_CMD_NAV_LAND ;
     komut.confirmation     =true;
  
-   mavlink_message_t mesaj2;
-   mavlink_msg_command_long_encode(sistemID, companionID, &mesaj, &komut);
+   mavlink_message_t mesaj4;
+   mavlink_msg_command_long_encode(sistemID, companionID, &mesaj4, &komut);
      
-     int gonder2= write_message(mesaj2)
+     int gonder2= write_message(mesaj4)
      
-     return gonder2;
+     return gonder4;
 }
 
 void loop()
