@@ -1,8 +1,5 @@
-#include <checksum.h>
-#include <mavlink_conversions.h>
-#include <mavlink_get_info.h>
+#include <mavlink.h>
 #include <mavlink_helpers.h>
-#include <mavlink_sha256.h>
 #include <mavlink_types.h>
 #include <protocol.h>
 #include <SoftwareSerial.h>
@@ -11,36 +8,30 @@
 #include <ezBuzzer.h>
 #define servoPin 9 //pin
 
-ezButton limitSwitch //pin
-int buzzer_pin = //pin
+ezButton limitSwitch = 4;//pin
+int buzzer_pin = 8;//pin?
 Servo servo;
+char heartbeat;
 
 ezBuzzer sesliIkaz(buzzer_pin);
-
-unit8_t sistemTuru   = MAV_TYPE_HEXAROTOR;
-unit8_t otopilotTuru =  MAV_AUTOPILOT_PIXHAWK;
-unit8_t sistemModu   = MAV_MODE_AUTO_ARMED;
-unit8_t sistemDurumu = MAV_STATE_STANDBY; 
+ezButton buton(buzzer_pin);
 
 uint8_t mav1[MAVLINK_MAX_PACKET_LEN];
 uint8_t mav2[MAVLINK_MAX_PACKET_LEN]; 
 
-int yukseklik;
-int buton = ?;               
+int yukseklik   = 0;
 int butondurum  = 0; 
 int sistemID    = 1;
 int companionID = 1;
 int otopilotID  = 1;
 int bayrak;
+int degisken    =0;
 
 void setup(){
-  Serial.begin(9600);
   pinMode(buton,INPUT);
-
-  heartbeat.sistemModu   =  MAV_MODE_AUTO_ARMED; 
-  heartbeat.custom_mode  = --;// ' mod yaz'
-  heartbeat.sistemDurumu = MAV_S TATE_STANDBY;
-  limitSwitch.setDebounceTime(50); 50 ms ile kontrol ediliyor
+  Serial.begin(9600);
+  
+  limitSwitch.setDebounceTime(50); //50 ms ile kontrol ediliyor
   servo.attach(servoPin);
 }
 int guidedModu(){//guided
@@ -49,30 +40,31 @@ int guidedModu(){//guided
     guided.target_system    = 1;
     guided.target_component = 1;
     guided.command          = MAV_CMD_DO_SET_MODE;
-    guided.confirmation     =true;
-    guided.param1           =1;
-    guided.param2           =GUIDED; //4
+    guided.confirmation     = true;
+    guided.param1           = 1;
+    guided.param2           = 4; //GUIDED
  
-   mavlink_message_t mesaj;
+   __mavlink_message mesaj;
    mavlink_msg_command_long_encode(sistemID, companionID, &mesaj, &guided);
 
   
-   int gonder= write_message(mesaj);
+   int gonder = mavlink_msg_to_send_buffer(mesaj);
 
     return gonder;
 }
 int armModu(){//arm
      
-    mavlink_command_long_t armEtme;     armEtme.target_system = 1;
+    mavlink_command_long_t armEtme;     
+    armEtme.target_system    = 1;
     armEtme.target_component = 1;
     armEtme.command          = MAV_CMD_COMPONENT_ARM_DISARM;
-    armEtme.confirmation     =true;
+    armEtme.confirmation     = true;
    
-   mavlink_message_t mesaj1;
+   __mavlink_message mesaj1;
    mavlink_msg_command_long_encode(sistemID, companionID, &mesaj1, &armEtme);
 
   
-   int gonder1= write_message(mesaj1);
+   int gonder1= mavlink_msg_to_send_buffer(mesaj1);
 
     return gonder1;
 }
@@ -82,36 +74,31 @@ int kalkisModu(){
     kalkis.target_system    = 1;
     kalkis.target_component = 1;
     kalkis.command          = MAV_CMD_NAV_TAKEOFF;
-    kalkis.confirmation     =true;
+    kalkis.confirmation     = true;
  
-   mavlink_message_t mesaj3;
+   __mavlink_message mesaj3;
    mavlink_msg_command_long_encode(sistemID, companionID, &mesaj3, &kalkis);
 
   
-   int gonder3= write_message(mesaj3);
+   int gonder3= mavlink_msg_to_send_buffer(mesaj3);
 
      return gonder3;
 }
 
 int irtifaSabitle(){
-   if(bayrak==1)
-     continue;
      
     mavlink_command_long_t irtifa;
     irtifa.target_system    = 1;
     irtifa.target_component = 1;
-    irtifa.command          =  MAV_CMD_NAV_LOITER_TIME;
-    irtifa.confirmation     =true;
+    irtifa.command          = MAV_CMD_NAV_LOITER_TIME;
+    irtifa.confirmation     = true;
  
-   mavlink_message_t mesaj4;
+   __mavlink_message mesaj4;
    mavlink_msg_command_long_encode(sistemID, companionID, &mesaj4, &irtifa);
 
   
-   int gonder4= write_message(mesaj4);
-   bayrak=2;
+   int gonder4= mavlink_msg_to_send_buffer(mesaj4);
      
-   else
-     bayrak=1;
    
      return gonder4;
 }
@@ -126,22 +113,22 @@ int landKomutu(){
    mavlink_message_t mesaj5;
    mavlink_msg_command_long_encode(sistemID, companionID, &mesaj5, &inis); //1,255,
      
-     int gonder5= write_message(mesaj5)
+     int gonder5 = mavlink_msg_to_send_buffer(&mesaj5)
      
      return gonder5;
 }
 
 void loop()
 {
-  buzzer.loop();
-  button.loop();
+  sesliIkaz.loop();
+  buton.loop();
   
   if(yukseklik==410)
     degisken=1;
   else if(yukseklik==700)
     //1.ayrılma gerçekleşiyor
     
-  else if(yukseklik==410 && degisken==1){
+  if(yukseklik==410 && degisken==1){
     bayrak=1;
      
     servo.write(90);   //2.ayrılma gerçekleşti
@@ -150,28 +137,25 @@ void loop()
 
   guidedModu();
   armModu();
-  kalkısModu(); 
+  kalkisModu(); 
   //hız değişkenleri yapılacak
   
-  else if(yukseklik==240){
+  if(yukseklik==240){
    irtifaSabitle();
    delay(10000);
   }
-  else if(190>yukseklik>=20)
+  else if(190>yukseklik>=20){
    landKomutu();
    //hız değişkeni
-   
+  }
   else if(yukseklik==0 && bayrak==2){
    butondurum = digitalRead(buton);   
    
-   if (butondurum = 0){
-    digitalWrite(buton,LOW);
-    Serial.print("SİSTEM KAPANDI");
-    sesliIkaz.beep(1 dk boyunca);
+    if (butondurum = 0){
+     digitalWrite(buton,LOW);
+     Serial.print("SİSTEM KAPANDI");
+     sesliIkaz.beep(100000);
    }
    
-   else{ 
-    continue;
-   }
 //telemetri verileri ve görüntü aktarımı 1dk boyunca
-}
+} }
